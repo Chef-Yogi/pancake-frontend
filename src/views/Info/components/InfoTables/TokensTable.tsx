@@ -1,22 +1,23 @@
-import { useState, useMemo, useCallback, useEffect, Fragment } from 'react'
-import styled from 'styled-components'
+import { useTranslation } from '@pancakeswap/localization'
 import {
-  Text,
-  Flex,
-  Box,
-  Skeleton,
   ArrowBackIcon,
   ArrowForwardIcon,
+  Box,
+  Flex,
+  Skeleton,
+  Text,
   useMatchBreakpointsContext,
 } from '@pancakeswap/uikit'
-import { TokenData } from 'state/info/types'
 import { NextLinkFromReactRouter } from 'components/NextLink'
-import { CurrencyLogo } from 'views/Info/components/CurrencyLogo'
-import { formatAmount } from 'utils/formatInfoNumbers'
-import Percent from 'views/Info/components/Percent'
-import { useTranslation } from '@pancakeswap/localization'
 import orderBy from 'lodash/orderBy'
-import { ClickableColumnHeader, TableWrapper, PageButtons, Arrow, Break } from './shared'
+import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
+import { useGetChainName } from 'state/info/hooks'
+import { TokenData } from 'state/info/types'
+import styled from 'styled-components'
+import { formatAmount } from 'utils/formatInfoNumbers'
+import { CurrencyLogo } from 'views/Info/components/CurrencyLogo'
+import Percent from 'views/Info/components/Percent'
+import { Arrow, Break, ClickableColumnHeader, PageButtons, TableWrapper } from './shared'
 
 /**
  *  Columns on different layouts
@@ -97,6 +98,7 @@ const TableLoader: React.FC<React.PropsWithChildren> = () => {
 
 const DataRow: React.FC<React.PropsWithChildren<{ tokenData: TokenData; index: number }>> = ({ tokenData, index }) => {
   const { isXs, isSm } = useMatchBreakpointsContext()
+  const chainName = useGetChainName()
   return (
     <LinkWrapper to={`/info/token/${tokenData.address}`}>
       <ResponsiveGrid>
@@ -104,7 +106,7 @@ const DataRow: React.FC<React.PropsWithChildren<{ tokenData: TokenData; index: n
           <Text>{index + 1}</Text>
         </Flex>
         <Flex alignItems="center">
-          <ResponsiveLogo address={tokenData.address} />
+          <ResponsiveLogo address={tokenData.address} chainName={chainName} />
           {(isXs || isSm) && <Text ml="8px">{tokenData.symbol}</Text>}
           {!isXs && !isSm && (
             <Flex marginLeft="10px">
