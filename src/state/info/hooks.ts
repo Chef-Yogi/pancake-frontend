@@ -1,6 +1,5 @@
-import { ChainId } from '@pancakeswap/sdk'
 import { Duration, getUnixTime, startOfHour, sub } from 'date-fns'
-import useActiveWeb3React from 'hooks/useActiveWeb3React'
+import { useRouter } from 'next/router'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { AppState, useAppDispatch } from 'state'
@@ -28,7 +27,6 @@ import {
   updateTokenTransactions,
 } from './actions'
 import { ChartEntry, PoolData, PriceChartEntry, ProtocolData, TokenData } from './types'
-
 // Protocol hooks
 
 export const useProtocolData = (): [ProtocolData | undefined, (protocolData: ProtocolData) => void] => {
@@ -342,8 +340,8 @@ export const useTokenTransactions = (address: string): Transaction[] | undefined
 }
 
 export const useGetChainName = () => {
-  return 'ETH'
-  const { chainId } = useActiveWeb3React()
-  if (ChainId.ETHEREUM === chainId) return 'ETH'
+  const router = useRouter()
+  const { chainname } = router.query
+  if (chainname === 'eth') return 'ETH'
   return 'BSC'
 }
