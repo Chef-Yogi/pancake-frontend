@@ -11,7 +11,7 @@ import {
 import { NextLinkFromReactRouter } from 'components/NextLink'
 import orderBy from 'lodash/orderBy'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
-import { useGetChainName } from 'state/info/hooks'
+import { useGetChainName, useMultiChainPath } from 'state/info/hooks'
 import { TokenData } from 'state/info/types'
 import styled from 'styled-components'
 import { formatAmount } from 'utils/formatInfoNumbers'
@@ -99,8 +99,9 @@ const TableLoader: React.FC<React.PropsWithChildren> = () => {
 const DataRow: React.FC<React.PropsWithChildren<{ tokenData: TokenData; index: number }>> = ({ tokenData, index }) => {
   const { isXs, isSm } = useMatchBreakpointsContext()
   const chainName = useGetChainName()
+  const chianPath = useMultiChainPath()
   return (
-    <LinkWrapper to={`/info/token/${tokenData.address}`}>
+    <LinkWrapper to={`/info${chianPath}/tokens/${tokenData.address}`}>
       <ResponsiveGrid>
         <Flex>
           <Text>{index + 1}</Text>
