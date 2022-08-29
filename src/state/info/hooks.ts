@@ -341,7 +341,7 @@ export const useTokenTransactions = (address: string): Transaction[] | undefined
 
 export const useGetChainName = () => {
   const router = useRouter()
-  const { chainname } = router.query
-  if (chainname === 'eth') return 'ETH'
+  const { chainName } = router.query
+  if (chainName === 'eth') return 'ETH'
   return 'BSC'
 }
