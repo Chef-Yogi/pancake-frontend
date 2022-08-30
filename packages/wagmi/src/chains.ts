@@ -79,6 +79,8 @@ export const fantomTestnet: Chain = {
 
 const bscExplorer = { name: 'BscScan', url: 'https://bscscan.com' }
 
+const etherExplorer = { name: 'Etherscan', url: 'https://etherscan.io/' }
+
 export const bsc: Chain = {
   id: 56,
   name: 'BNB Smart Chain',
@@ -99,6 +101,28 @@ export const bsc: Chain = {
     address: '0x72dba3Fa54C73D9EDB493e9F4eDf884439B1eBC4',
     blockCreated: 20455688,
   },
+}
+
+export const ETH: Chain = {
+  id: 1,
+  name: 'Ethereum',
+  network: 'ether',
+  rpcUrls: {
+    default: 'https://ethereum.org/',
+  },
+  blockExplorers: {
+    default: etherExplorer,
+    etherscan: etherExplorer,
+  },
+  // nativeCurrency: {
+  //   name: 'Binance Chain Native Token',
+  //   symbol: 'BNB',
+  //   decimals: 18,
+  // },
+  // multicall: {
+  //   address: '0x72dba3Fa54C73D9EDB493e9F4eDf884439B1eBC4',
+  //   blockCreated: 20455688,
+  // },
 }
 
 export const bscTest: Chain = {
@@ -164,7 +188,7 @@ export const CHAINS_TESTNET = [
 
 export const CHAINS = [
   bsc,
-  // TODO: ETH
+  ETH,
   // mainnet,
   bscTest,
   rinkeby,
