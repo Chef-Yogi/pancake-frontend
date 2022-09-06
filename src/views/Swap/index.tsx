@@ -94,7 +94,7 @@ const SwitchIconButton = styled(IconButton)`
   }
 `
 
-const CHART_SUPPORT_CHAIN_IDS = [ChainId.BSC]
+const CHART_SUPPORT_CHAIN_IDS = [ChainId.BSC, ChainId.ETHEREUM]
 
 export default function Swap() {
   const router = useRouter()
