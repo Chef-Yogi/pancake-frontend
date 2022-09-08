@@ -1,16 +1,16 @@
 import React from "react";
-import { renderWithTheme } from "../../testHelpers";
+import { renderWithProvider } from "../../testHelpers";
 import { Spinner } from "../../components/Spinner";
 
 it("renders correctly", () => {
-  const { asFragment } = renderWithTheme(<Spinner />);
+  const { asFragment } = renderWithProvider(<Spinner />);
   expect(asFragment()).toMatchInlineSnapshot(`
     <DocumentFragment>
       .c1 {
       -webkit-align-self: center;
       -ms-flex-item-align: center;
       align-self: center;
-      fill: #280D5F;
+      fill: var(--colors-text);
       -webkit-flex-shrink: 0;
       -ms-flex-negative: 0;
       flex-shrink: 0;

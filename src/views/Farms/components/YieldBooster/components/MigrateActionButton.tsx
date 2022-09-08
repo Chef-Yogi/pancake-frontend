@@ -1,15 +1,13 @@
-import { Button, useModal } from '@pancakeswap/uikit'
-import { useWeb3React } from '@pancakeswap/wagmi'
-import { ToastDescriptionWithTx } from 'components/Toast'
 import { useTranslation } from '@pancakeswap/localization'
-import { useERC20 } from 'hooks/useContract'
-import useToast from 'hooks/useToast'
+import { Button, useModal, useToast } from '@pancakeswap/uikit'
+import { ToastDescriptionWithTx } from 'components/Toast'
+import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import useCatchTxError from 'hooks/useCatchTxError'
+import { useERC20 } from 'hooks/useContract'
 import { useAppDispatch } from 'state'
 
 import { fetchFarmUserDataAsync } from 'state/farms'
 import { useFarmFromPid, useFarmUser } from 'state/farms/hooks'
-import { getAddress } from 'utils/addressHelpers'
 import useUnstakeFarms from '../../../hooks/useUnstakeFarms'
 import { BCakeMigrateModal } from '../../BCakeMigrateModal'
 
@@ -21,12 +19,10 @@ const MigrateActionButton: React.FunctionComponent<MigrateActionButtonPropsType>
   const { t } = useTranslation()
   const { toastSuccess } = useToast()
   const { fetchWithCatchTxError } = useCatchTxError()
-  const { account } = useWeb3React()
+  const { account, chainId } = useActiveWeb3React()
   const { onUnstake } = useUnstakeFarms(pid)
   const { stakedBalance } = useFarmUser(pid)
-  const { lpAddresses } = useFarmFromPid(pid)
-
-  const lpAddress = getAddress(lpAddresses)
+  const { lpAddress } = useFarmFromPid(pid)
   const lpContract = useERC20(lpAddress)
   const dispatch = useAppDispatch()
 
@@ -42,7 +38,7 @@ const MigrateActionButton: React.FunctionComponent<MigrateActionButtonPropsType>
         </ToastDescriptionWithTx>,
       )
       callback()
-      dispatch(fetchFarmUserDataAsync({ account, pids: [pid] }))
+      dispatch(fetchFarmUserDataAsync({ account, pids: [pid], chainId }))
     }
   }
 

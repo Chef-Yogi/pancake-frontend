@@ -1,11 +1,13 @@
 import { ChainId, Pair, Token } from '@pancakeswap/sdk'
+import { deserializeToken } from '@pancakeswap/tokens'
 import { differenceInDays } from 'date-fns'
 import flatMap from 'lodash/flatMap'
-import farms from 'config/constants/farms'
+import { getFarmConfig } from '@pancakeswap/farms/constants'
 import { useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { BASES_TO_TRACK_LIQUIDITY_FOR, PINNED_PAIRS } from 'config/constants/exchange'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
+import useSWRImmutable from 'swr/immutable'
 import { useFeeData } from 'wagmi'
 import { useOfficialsAndUserAddedTokens } from 'hooks/Tokens'
 import { AppState, useAppDispatch } from '../../index'
@@ -42,7 +44,6 @@ import {
   updateUserLimitOrderAcceptedWarning,
   setZapDisabled,
 } from '../actions'
-import { deserializeToken, serializeToken } from './helpers'
 import { GAS_PRICE_GWEI } from '../../types'
 
 export function useAudioModeManager(): [boolean, () => void] {
@@ -385,7 +386,7 @@ export function useAddUserToken(): (token: Token) => void {
   const dispatch = useAppDispatch()
   return useCallback(
     (token: Token) => {
-      dispatch(addSerializedToken({ serializedToken: serializeToken(token) }))
+      dispatch(addSerializedToken({ serializedToken: token.serialize }))
     },
     [dispatch],
   )
@@ -437,8 +438,8 @@ export function useGasPriceManager(): [string, (userGasPrice: string) => void] {
 
 function serializePair(pair: Pair): SerializedPair {
   return {
-    token0: serializeToken(pair.token0),
-    token1: serializeToken(pair.token1),
+    token0: pair.token0.serialize,
+    token1: pair.token1.serialize,
   }
 }
 
@@ -472,15 +473,12 @@ export function useTrackedTokenPairs(): [Token, Token][] {
   // pinned pairs
   const pinnedPairs = useMemo(() => (chainId ? PINNED_PAIRS[chainId] ?? [] : []), [chainId])
 
-  const farmPairs: [Token, Token][] = useMemo(
-    () =>
-      chainId === ChainId.BSC
-        ? farms
-            .filter((farm) => farm.pid !== 0)
-            .map((farm) => [deserializeToken(farm.token), deserializeToken(farm.quoteToken)])
-        : [],
-    [chainId],
-  )
+  const { data: farmPairs = [] } = useSWRImmutable(chainId && ['track-farms-pairs', chainId], async () => {
+    const farms = await getFarmConfig(chainId)
+    farms
+      .filter((farm) => farm.pid !== 0)
+      .map((farm) => [deserializeToken(farm.token), deserializeToken(farm.quoteToken)])
+  })
 
   // pairs for every token against every base
   const generatedPairs: [Token, Token][] = useMemo(

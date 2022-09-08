@@ -1,34 +1,34 @@
+import { useTranslation } from '@pancakeswap/localization'
 import {
   Box,
   Card,
   CardBody,
   CardFooter,
   CardHeader,
-  ExpandableLabel,
   ExpandableButton,
-  useMatchBreakpointsContext,
+  ExpandableLabel,
+  useMatchBreakpoints,
+  useToast,
 } from '@pancakeswap/uikit'
 import { useWeb3React } from '@pancakeswap/wagmi'
 import { ToastDescriptionWithTx } from 'components/Toast'
 import { Ifo, PoolIds } from 'config/constants/types'
-import { useTranslation } from '@pancakeswap/localization'
+import useCatchTxError from 'hooks/useCatchTxError'
 import { useERC20 } from 'hooks/useContract'
-import useToast from 'hooks/useToast'
-import { useEffect, useState, useRef } from 'react'
+import { useIsWindowVisible } from '@pancakeswap/hooks'
+import { useFastRefreshEffect } from 'hooks/useRefreshEffect'
 import { useRouter } from 'next/router'
+import { useEffect, useRef, useState } from 'react'
 import { useCurrentBlock } from 'state/block/hooks'
 import styled from 'styled-components'
 import { requiresApproval } from 'utils/requiresApproval'
-import { useFastRefreshEffect } from 'hooks/useRefreshEffect'
-import useCatchTxError from 'hooks/useCatchTxError'
-import useIsWindowVisible from 'hooks/useIsWindowVisible'
 import { PublicIfoData, WalletIfoData } from 'views/Ifos/types'
 import useIfoApprove from '../../hooks/useIfoApprove'
+import { CardsWrapper } from '../IfoCardStyles'
 import IfoAchievement from './Achievement'
 import IfoPoolCard from './IfoPoolCard'
-import { EnableStatus } from './types'
 import { IfoRibbon } from './IfoRibbon'
-import { CardsWrapper } from '../IfoCardStyles'
+import { EnableStatus } from './types'
 
 interface IfoFoldableCardProps {
   ifo: Ifo
@@ -54,7 +54,7 @@ const StyledCard = styled(Card)<{ $isCurrent?: boolean }>`
   `}
 
   > div {
-    background: ${({ theme, $isCurrent }) => ($isCurrent ? theme.colors.gradients.bubblegum : theme.colors.dropdown)};
+    background: ${({ theme, $isCurrent }) => ($isCurrent ? theme.colors.gradientBubblegum : theme.colors.dropdown)};
   }
 
   ${({ theme }) => theme.mediaQueries.sm} {
@@ -79,7 +79,7 @@ const Header = styled(CardHeader)<{ ifoId: string; $isCurrent?: boolean }>`
   border-top-left-radius: 32px;
   border-top-right-radius: 32px;
   background-color: ${({ theme }) => theme.colors.dropdown};
-  background-image: ${({ ifoId }) => `url('/images/ifos/${ifoId}-bg.svg'), url('/images/ifos/${ifoId}-bg.png')`};
+  background-image: ${({ ifoId }) => `url('/images/ifos/${ifoId}-bg.png')`};
   ${({ theme }) => theme.mediaQueries.md} {
     height: 112px;
   }
@@ -126,7 +126,7 @@ const StyledNoHatBunny = styled.div<{ $isLive: boolean; $isCurrent?: boolean }>`
 `
 
 const NoHatBunny = ({ isLive, isCurrent }: { isLive?: boolean; isCurrent?: boolean }) => {
-  const { isXs, isSm, isMd } = useMatchBreakpointsContext()
+  const { isXs, isSm, isMd } = useMatchBreakpoints()
   const isSmallerThanTablet = isXs || isSm || isMd
   if (isSmallerThanTablet && isLive) return null
   return (
@@ -153,7 +153,7 @@ export const IfoCurrentCard = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState(false)
   const { t } = useTranslation()
-  const { isMobile } = useMatchBreakpointsContext()
+  const { isMobile } = useMatchBreakpoints()
 
   const shouldShowBunny = publicIfoData.status === 'live' || publicIfoData.status === 'coming_soon'
 
@@ -210,7 +210,7 @@ const IfoFoldableCard = ({
   walletIfoData: WalletIfoData
 }) => {
   const { asPath } = useRouter()
-  const { isDesktop } = useMatchBreakpointsContext()
+  const { isDesktop } = useMatchBreakpoints()
   const [isExpanded, setIsExpanded] = useState(false)
   const wrapperEl = useRef<HTMLDivElement>(null)
 

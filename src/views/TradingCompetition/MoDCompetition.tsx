@@ -2,12 +2,12 @@ import { useState, useEffect } from 'react'
 import { useTranslation } from '@pancakeswap/localization'
 import { useWeb3React } from '@pancakeswap/wagmi'
 import { useProfile } from 'state/profile/hooks'
-import { Flex, Box, useMatchBreakpointsContext } from '@pancakeswap/uikit'
+import { Flex, Box, useMatchBreakpoints } from '@pancakeswap/uikit'
 import Image from 'next/image'
 import { useTradingCompetitionContractMoD } from 'hooks/useContract'
 import useTheme from 'hooks/useTheme'
 import { PageMeta } from 'components/Layout/Page'
-import { TC_MOD_SUBGRAPH } from 'config/constants/endpoints'
+import { TC_MOD_SUBGRAPH, API_PROFILE } from 'config/constants/endpoints'
 import { multicallv2 } from 'utils/multicall'
 import tradingCompetitionMoDAbi from 'config/abi/tradingCompetitionMoD.json'
 import {
@@ -44,11 +44,10 @@ import MoDCakerBunny from './pngs/MoD-caker.png'
 import PrizesInfoSection from './components/PrizesInfoSection'
 
 const MoDCompetition = () => {
-  const profileApiUrl = process.env.NEXT_PUBLIC_API_PROFILE
   const { account } = useWeb3React()
   const { t } = useTranslation()
   const { profile, isLoading: isProfileLoading } = useProfile()
-  const { isMobile } = useMatchBreakpointsContext()
+  const { isMobile } = useMatchBreakpoints()
   const { isDark, theme } = useTheme()
   const tradingCompetitionContract = useTradingCompetitionContractMoD(false)
   const [currentPhase, setCurrentPhase] = useState(CompetitionPhases.CLAIM)
@@ -87,9 +86,9 @@ const MoDCompetition = () => {
 
     const fetchUserContract = async () => {
       try {
-        const [user, [userClaimed]] = await multicallv2(
-          tradingCompetitionMoDAbi,
-          [
+        const [user, [userClaimed]] = await multicallv2({
+          abi: tradingCompetitionMoDAbi,
+          calls: [
             {
               address: tradingCompetitionContract.address,
               name: 'claimInformation',
@@ -101,8 +100,8 @@ const MoDCompetition = () => {
               params: [account],
             },
           ],
-          { requireSuccess: false },
-        )
+          options: { requireSuccess: false },
+        })
         const userObject: UserTradingInformation = {
           isLoading: false,
           account,
@@ -132,7 +131,7 @@ const MoDCompetition = () => {
 
   useEffect(() => {
     const fetchUserTradingStats = async () => {
-      const res = await fetch(`${profileApiUrl}/api/users/${account}`)
+      const res = await fetch(`${API_PROFILE}/api/users/${account}`)
       const data = await res.json()
       setUserLeaderboardInformation(data.leaderboard_dar)
     }
@@ -142,7 +141,7 @@ const MoDCompetition = () => {
     } else {
       setUserLeaderboardInformation({ ...initialUserLeaderboardInformation })
     }
-  }, [account, userTradingInformation, profileApiUrl])
+  }, [account, userTradingInformation])
 
   const isLoading = isProfileLoading || userTradingInformation.isLoading
   // Don't hide when loading. Hide if the account is connected && the user hasn't registered && the competition is live or finished

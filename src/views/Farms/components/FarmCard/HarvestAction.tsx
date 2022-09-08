@@ -1,16 +1,15 @@
-import { Button, Flex, Heading, TooltipText, useTooltip } from '@pancakeswap/uikit'
+import { useTranslation } from '@pancakeswap/localization'
+import { Button, Flex, Heading, TooltipText, useToast, useTooltip } from '@pancakeswap/uikit'
 import { useWeb3React } from '@pancakeswap/wagmi'
 import BigNumber from 'bignumber.js'
 import Balance from 'components/Balance'
-import { useTranslation } from '@pancakeswap/localization'
 import { ToastDescriptionWithTx } from 'components/Toast'
-import useToast from 'hooks/useToast'
 import useCatchTxError from 'hooks/useCatchTxError'
 
+import { TransactionResponse } from '@ethersproject/providers'
 import { usePriceCakeBusd } from 'state/farms/hooks'
 import { BIG_ZERO } from 'utils/bigNumber'
 import { getBalanceAmount } from 'utils/formatBalance'
-import { TransactionResponse } from '@ethersproject/providers'
 
 interface FarmCardActionsProps {
   earnings?: BigNumber
@@ -34,8 +33,9 @@ const HarvestAction: React.FC<React.PropsWithChildren<FarmCardActionsProps>> = (
   const rawEarningsBalance = account ? getBalanceAmount(earnings) : BIG_ZERO
   const displayBalance = rawEarningsBalance.toFixed(5, BigNumber.ROUND_DOWN)
   const earningsBusd = rawEarningsBalance ? rawEarningsBalance.multipliedBy(cakePrice).toNumber() : 0
+  const tooltipBalance = rawEarningsBalance.isGreaterThan(new BigNumber(0.00001)) ? displayBalance : '< 0.00001'
   const { targetRef, tooltip, tooltipVisible } = useTooltip(
-    `${displayBalance} ${t(
+    `${tooltipBalance} ${t(
       `CAKE has been harvested to the farm booster contract and will be automatically sent to your wallet upon the next harvest.`,
     )}`,
     {

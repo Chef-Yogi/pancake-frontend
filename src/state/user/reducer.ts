@@ -1,5 +1,5 @@
 import { createReducer } from '@reduxjs/toolkit'
-import { SerializedToken } from 'config/constants/types'
+import { SerializedWrappedToken } from '@pancakeswap/tokens'
 import { DEFAULT_DEADLINE_FROM_NOW, INITIAL_ALLOWED_SLIPPAGE } from '../../config/constants'
 import { updateVersion } from '../global/actions'
 import {
@@ -57,7 +57,7 @@ export interface UserState {
 
   tokens: {
     [chainId: number]: {
-      [address: string]: SerializedToken
+      [address: string]: SerializedWrappedToken
     }
   }
 
@@ -126,7 +126,7 @@ export const initialState: UserState = {
 export default createReducer(initialState, (builder) =>
   builder
     .addCase(updateVersion, (state) => {
-      // slippage isnt being tracked in local storage, reset to default
+      // slippage is'nt being tracked in local storage, reset to default
       // noinspection SuspiciousTypeOfGuard
       if (typeof state.userSlippageTolerance !== 'number') {
         state.userSlippageTolerance = INITIAL_ALLOWED_SLIPPAGE

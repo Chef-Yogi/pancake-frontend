@@ -1,7 +1,10 @@
+import { multicallAddresses } from '@pancakeswap/multicall'
+
 export default {
   masterChef: {
     97: '0xB4A466911556e39210a6bB2FaECBB59E4eB7E43d',
     56: '0xa5f8C5Dbd5F286960b9d90548680aE5ebFf07652',
+    5: '0x8CB958bBdb45597cc918147469eb650A9397aBDA',
   },
   masterChefV1: {
     97: '0x1d32c2945C8FDCBc7156c553B7cEa4325a17f4f9',
@@ -15,13 +18,7 @@ export default {
     97: '0x5790c3534F30437641541a0FA04C992799602998',
     56: '0x5aF6D33DE2ccEC94efb1bDF8f92Bd58085432d2c',
   },
-  multiCall: {
-    1: '0x5BA1e12693Dc8F9c48aAD8770482f4739bEeD696',
-    4: '0x5BA1e12693Dc8F9c48aAD8770482f4739bEeD696',
-    5: '0x5BA1e12693Dc8F9c48aAD8770482f4739bEeD696',
-    56: '0xfF6FD90A470Aaa0c1B8A54681746b07AcdFedc9B',
-    97: '0x8F3273Fb89B075b1645095ABaC6ed17B2d4Bc576',
-  },
+  multiCall: multicallAddresses,
   pancakeProfile: {
     56: '0xDf4dBf6536201370F95e06A0F8a7a70fE40E388a',
     97: '0x4B683C7E13B6d5D7fd1FeA9530F451954c1A7c8A',

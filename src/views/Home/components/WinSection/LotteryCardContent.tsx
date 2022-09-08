@@ -16,7 +16,7 @@ const StyledLink = styled(NextLinkFromReactRouter)`
 `
 
 const StyledBalance = styled(Balance)`
-  background: ${({ theme }) => theme.colors.gradients.gold};
+  background: ${({ theme }) => theme.colors.gradientGold};
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 `
@@ -25,7 +25,7 @@ const LotteryCardContent = () => {
   const { t } = useTranslation()
   const { observerRef, isIntersecting } = useIntersectionObserver()
   const [loadData, setLoadData] = useState(false)
-  const cakePriceBusd = usePriceCakeBusd()
+  const cakePriceBusd = usePriceCakeBusd({ forceMainnet: true })
   const { data: currentLotteryId } = useSWRImmutable(loadData ? ['currentLotteryId'] : null, fetchCurrentLotteryId, {
     refreshInterval: SLOW_INTERVAL,
   })

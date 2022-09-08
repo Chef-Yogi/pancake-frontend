@@ -1,6 +1,9 @@
 import transpileModules from 'next-transpile-modules'
+import { withAxiom } from 'next-axiom'
+import { createVanillaExtractPlugin } from '@vanilla-extract/next-plugin'
 
-const withTH = transpileModules(['@pancakeswap/uikit', '@pancakeswap/wagmi', '@pancakeswap/sdk'])
+const withVanillaExtract = createVanillaExtractPlugin()
+const withTH = transpileModules(['@pancakeswap/uikit', '@pancakeswap/wagmi', '@pancakeswap/sdk', '@pancakeswap/ui'])
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -16,4 +19,4 @@ const nextConfig = {
   },
 }
 
-export default withTH(nextConfig)
+export default withTH(withAxiom(withVanillaExtract(nextConfig)))

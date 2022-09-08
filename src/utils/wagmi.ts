@@ -1,4 +1,5 @@
-import { bsc, BscConnector, CHAINS } from '@pancakeswap/wagmi'
+import { BinanceWalletConnector } from '@pancakeswap/wagmi/connectors/binanceWallet'
+import { bsc, bscTest, goerli, rinkeby } from '@pancakeswap/wagmi/chains'
 import { configureChains, createClient } from 'wagmi'
 import memoize from 'lodash/memoize'
 import { CoinbaseWalletConnector } from 'wagmi/connectors/coinbaseWallet'
@@ -7,6 +8,15 @@ import { MetaMaskConnector } from 'wagmi/connectors/metaMask'
 import { WalletConnectConnector } from 'wagmi/connectors/walletConnect'
 import { jsonRpcProvider } from 'wagmi/providers/jsonRpc'
 import { SafeConnector } from '@gnosis.pm/safe-apps-wagmi'
+
+const CHAINS = [
+  bsc,
+  // TODO: ETH
+  // mainnet,
+  bscTest,
+  rinkeby,
+  goerli,
+]
 
 const getNodeRealUrl = (networkName: string) => {
   let host = null
@@ -47,14 +57,7 @@ export const { provider, chains } = configureChains(CHAINS, [
       if (!!process.env.NEXT_PUBLIC_NODE_PRODUCTION && chain.id === bsc.id) {
         return { http: process.env.NEXT_PUBLIC_NODE_PRODUCTION }
       }
-      if (chain.rpcUrls.nodeReal) {
-        return (
-          getNodeRealUrl(chain.network) || {
-            http: chain.rpcUrls.nodeReal,
-          }
-        )
-      }
-      return { http: chain.rpcUrls.default }
+      return getNodeRealUrl(chain.network) || { http: chain.rpcUrls.default }
     },
   }),
 ])
@@ -90,7 +93,7 @@ export const metaMaskConnector = new MetaMaskConnector({
   },
 })
 
-export const bscConnector = new BscConnector({ chains })
+export const bscConnector = new BinanceWalletConnector({ chains })
 
 export const client = createClient({
   autoConnect: false,
@@ -105,6 +108,7 @@ export const client = createClient({
   ],
 })
 
-const CHAIN_IDS = chains.map((c) => c.id)
+export const CHAIN_IDS = chains.map((c) => c.id)
 
 export const isChainSupported = memoize((chainId: number) => CHAIN_IDS.includes(chainId))
+export const isChainTestnet = memoize((chainId: number) => chains.find((c) => c.id === chainId)?.testnet)

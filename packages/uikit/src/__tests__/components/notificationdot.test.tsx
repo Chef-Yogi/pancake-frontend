@@ -1,9 +1,9 @@
 import React from "react";
-import { renderWithTheme } from "../../testHelpers";
+import { renderWithProvider } from "../../testHelpers";
 import NotificationDot from "../../components/NotificationDot/NotificationDot";
 
 it("renders correctly", () => {
-  const { asFragment } = renderWithTheme(
+  const { asFragment } = renderWithProvider(
     <NotificationDot>
       <div />
     </NotificationDot>
@@ -26,9 +26,9 @@ it("renders correctly", () => {
       width: 10px;
       height: 10px;
       pointer-events: none;
-      border: 2px solid #FFFFFF;
+      border: 2px solid var(--colors-invertedContrast);
       border-radius: 50%;
-      background-color: #ED4B9E;
+      background-color: var(--colors-failure);
     }
 
     <span

@@ -7,7 +7,7 @@ import Search from 'views/Info/components/InfoSearch'
 import { useMultiChainPath } from 'state/info/hooks'
 
 const NavWrapper = styled(Flex)`
-  background: ${({ theme }) => theme.colors.gradients.cardHeader};
+  background: ${({ theme }) => theme.colors.gradientCardHeader};
   justify-content: space-between;
   padding: 20px 16px;
   flex-direction: column;

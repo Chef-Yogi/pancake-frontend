@@ -1,21 +1,22 @@
-import { memo, useCallback, useMemo, useState, useEffect } from 'react'
-import { Button, Text, CheckmarkIcon, CogIcon, Input, Toggle, LinkExternal, useTooltip } from '@pancakeswap/uikit'
-import { useSelector } from 'react-redux'
-import styled from 'styled-components'
+import { useTranslation } from '@pancakeswap/localization'
+import { Button, CheckmarkIcon, CogIcon, Input, LinkExternal, Text, Toggle, useTooltip } from '@pancakeswap/uikit'
 import { TokenList, Version } from '@uniswap/token-lists'
 import Card from 'components/Card'
 import { UNSUPPORTED_LIST_URLS } from 'config/constants/lists'
-import { useTranslation } from '@pancakeswap/localization'
-import useFetchListCallback from '../../hooks/useFetchListCallback'
+import useActiveWeb3React from 'hooks/useActiveWeb3React'
+import { useAtomValue } from 'jotai'
+import { memo, useCallback, useEffect, useMemo, useState } from 'react'
+import { listsAtom, useListState } from 'state/lists/lists'
+import styled from 'styled-components'
+import { useFetchListCallback } from '@pancakeswap/token-lists'
+import uriToHttp from '@pancakeswap/utils/uriToHttp'
 
-import { AppState, useAppDispatch } from '../../state'
-import { acceptListUpdate, removeList, disableList, enableList } from '../../state/lists/actions'
-import { useIsListActive, useAllLists, useActiveListUrls } from '../../state/lists/hooks'
-import uriToHttp from '../../utils/uriToHttp'
+import { acceptListUpdate, disableList, enableList, removeList } from '../../../packages/token-lists/src/actions'
+import { selectorByUrlsAtom, useActiveListUrls, useAllLists, useIsListActive } from '../../state/lists/hooks'
 
 import Column, { AutoColumn } from '../Layout/Column'
+import Row, { RowBetween, RowFixed } from '../Layout/Row'
 import { ListLogo } from '../Logo'
-import Row, { RowFixed, RowBetween } from '../Layout/Row'
 import { CurrencyModalView } from './types'
 
 function listVersionLabel(version: Version): string {
@@ -27,14 +28,15 @@ const Wrapper = styled(Column)`
   height: 100%;
 `
 
-const RowWrapper = styled(Row)<{ active: boolean }>`
-  background-color: ${({ active, theme }) => (active ? `${theme.colors.success}19` : 'transparent')};
+const RowWrapper = styled(Row)<{ active: boolean; hasActiveTokens: boolean }>`
+  background-color: ${({ active, theme }) => (active ? `${theme.colors.success19}` : 'transparent')};
   border: solid 1px;
   border-color: ${({ active, theme }) => (active ? theme.colors.success : theme.colors.tertiary)};
   transition: 200ms;
   align-items: center;
   padding: 1rem;
   border-radius: 20px;
+  opacity: ${({ hasActiveTokens }) => (hasActiveTokens ? 1 : 0.4)};
 `
 
 function listUrlRowHTMLId(listUrl: string) {
@@ -42,13 +44,20 @@ function listUrlRowHTMLId(listUrl: string) {
 }
 
 const ListRow = memo(function ListRow({ listUrl }: { listUrl: string }) {
-  const listsByUrl = useSelector<AppState, AppState['lists']['byUrl']>((state) => state.lists.byUrl)
-  const dispatch = useAppDispatch()
-  const { current: list, pendingUpdate: pending } = listsByUrl[listUrl]
-
+  const { chainId } = useActiveWeb3React()
+  const { t } = useTranslation()
   const isActive = useIsListActive(listUrl)
 
-  const { t } = useTranslation()
+  const listsByUrl = useAtomValue(selectorByUrlsAtom)
+  const [, dispatch] = useListState()
+  const { current: list, pendingUpdate: pending } = listsByUrl[listUrl]
+
+  const activeTokensOnThisChain = useMemo(() => {
+    if (!list || !chainId) {
+      return 0
+    }
+    return list.tokens.reduce((acc, cur) => (cur.chainId === chainId ? acc + 1 : acc), 0)
+  }, [chainId, list])
 
   const handleAcceptListUpdate = useCallback(() => {
     if (!pending) return
@@ -91,7 +100,12 @@ const ListRow = memo(function ListRow({ listUrl }: { listUrl: string }) {
   if (!list) return null
 
   return (
-    <RowWrapper active={isActive} key={listUrl} id={listUrlRowHTMLId(listUrl)}>
+    <RowWrapper
+      active={isActive}
+      hasActiveTokens={activeTokensOnThisChain > 0}
+      key={listUrl}
+      id={listUrlRowHTMLId(listUrl)}
+    >
       {tooltipVisible && tooltip}
       {list.logoURI ? (
         <ListLogo size="40px" style={{ marginRight: '1rem' }} logoURI={list.logoURI} alt={`${list.name} list logo`} />
@@ -159,7 +173,7 @@ function ManageLists({
     setListUrlInput(e.target.value)
   }, [])
 
-  const fetchList = useFetchListCallback()
+  const fetchList = useFetchListCallback(listsAtom)
 
   const validUrl: boolean = useMemo(() => {
     return uriToHttp(listUrlInput).length > 0

@@ -4,7 +4,7 @@ import Heading from "../../components/Heading/Heading";
 import getThemeValue from "../../util/getThemeValue";
 import { ModalBody, ModalHeader, ModalTitle, ModalContainer, ModalCloseButton, ModalBackButton } from "./styles";
 import { ModalProps } from "./types";
-import { useMatchBreakpointsContext } from "../../contexts";
+import { useMatchBreakpoints } from "../../contexts";
 
 export const MODAL_SWIPE_TO_CLOSE_VELOCITY = 300;
 
@@ -20,7 +20,7 @@ const Modal: React.FC<React.PropsWithChildren<ModalProps>> = ({
   ...props
 }) => {
   const theme = useTheme();
-  const { isMobile } = useMatchBreakpointsContext();
+  const { isMobile } = useMatchBreakpoints();
   const wrapperRef = useRef<HTMLDivElement>(null);
   return (
     // @ts-ignore
@@ -36,7 +36,7 @@ const Modal: React.FC<React.PropsWithChildren<ModalProps>> = ({
         if (info.velocity.y > MODAL_SWIPE_TO_CLOSE_VELOCITY && onDismiss) onDismiss();
       }}
       ref={wrapperRef}
-      minWidth={minWidth}
+      $minWidth={minWidth}
       {...props}
     >
       <ModalHeader background={getThemeValue(theme, `colors.${headerBackground}`, headerBackground)}>

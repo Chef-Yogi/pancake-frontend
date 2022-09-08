@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState, useMemo } from 'react'
 import { useRouter } from 'next/router'
 import { CurrencyAmount, Token, Trade, TradeType, Currency } from '@pancakeswap/sdk'
-import { Button, Box, Flex, useModal, BottomDrawer, Link, useMatchBreakpointsContext } from '@pancakeswap/uikit'
+import { Button, Box, Flex, useModal, BottomDrawer, Link, useMatchBreakpoints } from '@pancakeswap/uikit'
 
 import { useTranslation } from '@pancakeswap/localization'
 import { AutoColumn } from 'components/Layout/Column'
@@ -42,7 +42,7 @@ const LimitOrders = () => {
   const { account, chainId } = useWeb3React()
   const { t } = useTranslation()
   const router = useRouter()
-  const { isMobile, isTablet } = useMatchBreakpointsContext()
+  const { isMobile, isTablet } = useMatchBreakpoints()
   const { theme } = useTheme()
   const [userChartPreference, setUserChartPreference] = useExchangeChartManager(isMobile)
   const [isChartExpanded, setIsChartExpanded] = useState(false)
@@ -264,7 +264,9 @@ const LimitOrders = () => {
   const handleTokenSwitch = useCallback(() => {
     setApprovalSubmitted(false)
     handleSwitchTokens()
-  }, [handleSwitchTokens])
+    replaceBrowserHistory('inputCurrency', currencyIds.output)
+    replaceBrowserHistory('outputCurrency', currencyIds.input)
+  }, [handleSwitchTokens, currencyIds.output, currencyIds.input])
 
   const { realExecutionPriceAsString } = useGasOverhead(parsedAmounts.input, parsedAmounts.output, rateType)
 
@@ -464,9 +466,9 @@ const LimitOrders = () => {
         content={
           <PriceChartContainer
             inputCurrencyId={currencyIds.input}
-            inputCurrency={currencies[Field.INPUT]}
+            inputCurrency={currencies.input}
             outputCurrencyId={currencyIds.output}
-            outputCurrency={currencies[Field.OUTPUT]}
+            outputCurrency={currencies.output}
             isChartExpanded={isChartExpanded}
             setIsChartExpanded={setIsChartExpanded}
             isChartDisplayed={isChartDisplayed}

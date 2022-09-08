@@ -1,6 +1,6 @@
 import { ChainId, JSBI, Percent, Token, WNATIVE, WBNB } from '@pancakeswap/sdk'
 import { BigNumber } from '@ethersproject/bignumber'
-import { bscTokens, bscTestnetTokens, USDC, USDT, BUSD } from './tokens'
+import { bscTokens, bscTestnetTokens, USDC, USDT, BUSD } from '@pancakeswap/tokens'
 import { ChainMap, ChainTokenList } from './types'
 
 export const ROUTER_ADDRESS: ChainMap<string> = {
@@ -39,7 +39,10 @@ export const BASES_TO_CHECK_TRADES_AGAINST: ChainTokenList = {
  * @example { [WBTC.address]: [renBTC], [renBTC.address]: [WBTC] }
  */
 export const ADDITIONAL_BASES: { [chainId in ChainId]?: { [tokenAddress: string]: Token[] } } = {
-  [ChainId.BSC]: {},
+  [ChainId.BSC]: {
+    // SNFTS-SFUND
+    [bscTokens.snfts.address]: [bscTokens.sfund],
+  },
 }
 
 /**

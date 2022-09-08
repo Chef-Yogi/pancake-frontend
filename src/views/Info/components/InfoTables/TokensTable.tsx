@@ -1,13 +1,5 @@
 import { useTranslation } from '@pancakeswap/localization'
-import {
-  ArrowBackIcon,
-  ArrowForwardIcon,
-  Box,
-  Flex,
-  Skeleton,
-  Text,
-  useMatchBreakpointsContext,
-} from '@pancakeswap/uikit'
+import { ArrowBackIcon, ArrowForwardIcon, Box, Flex, Skeleton, Text, useMatchBreakpoints } from '@pancakeswap/uikit'
 import { NextLinkFromReactRouter } from 'components/NextLink'
 import orderBy from 'lodash/orderBy'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
@@ -97,7 +89,7 @@ const TableLoader: React.FC<React.PropsWithChildren> = () => {
 }
 
 const DataRow: React.FC<React.PropsWithChildren<{ tokenData: TokenData; index: number }>> = ({ tokenData, index }) => {
-  const { isXs, isSm } = useMatchBreakpointsContext()
+  const { isXs, isSm } = useMatchBreakpoints()
   const chainName = useGetChainName()
   const chianPath = useMultiChainPath()
   return (

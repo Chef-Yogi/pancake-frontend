@@ -17,13 +17,13 @@ import {
   UserMenuDivider,
   UserMenuItem,
 } from '@pancakeswap/uikit'
-import { CHAINS_STARGATE } from '@pancakeswap/wagmi'
 import { useTheme as useNextTheme } from 'next-themes'
 import Image from 'next/future/image'
 import NextLink from 'next/link'
 import { useEffect, useReducer, useRef, useState } from 'react'
 import styled, { useTheme } from 'styled-components'
 import { getTimePeriods } from './getTimePeriods'
+import { CHAINS_STARGATE } from './stargate/config'
 import { findChainByStargateId } from './stargate/network'
 
 const StyledMenuItem = styled.a<any>`
@@ -73,7 +73,7 @@ export function Menu() {
   const { setTheme } = useNextTheme()
 
   return (
-    <Flex height="56px" bg="backgroundAlt" px="16px" alignItems="center" justifyContent="space-between" zIndex={1}>
+    <Flex height="56px" bg="backgroundAlt" px="16px" alignItems="center" justifyContent="space-between" zIndex={9}>
       <Flex>
         <Logo isDark={theme.isDark} href="https://pancakeswap.finance" />
 
@@ -113,6 +113,10 @@ const UserMenuItems = ({ onShowTx }: { onShowTx: () => void }) => {
           <Text pl="12px">{chain.name}</Text>
         </UserMenuItem>
       ))}
+      <UserMenuDivider />
+      <UserMenuItem onClick={() => window?.stargate.wallet.disconnect()}>
+        <Text>Disconnect</Text>
+      </UserMenuItem>
     </>
   )
 }
@@ -338,9 +342,9 @@ function User() {
     })
   }, [])
 
-  const { account, chainId, active } = wallet || {}
+  const { account, chainId } = wallet || {}
 
-  const chain = CHAINS_STARGATE.find((c) => c.id === chainId)
+  const chain = findChainByStargateId(chainId)
 
   const isWrongNetwork = chainId && !chain
   const hasPendingTransactions = pending.length > 0
@@ -353,13 +357,13 @@ function User() {
     )
   }
 
-  if (active) {
+  if (account) {
     return (
       <UserMenu
         variant={hasPendingTransactions ? 'pending' : 'default'}
         account={account}
         text={hasPendingTransactions ? `${pending.length} Pending` : ''}
-        avatarSrc={chainId ? `/chains/${chainId}.png` : undefined}
+        avatarSrc={chain ? `/chains/${chain?.chain.id}.png` : undefined}
       >
         {() => <UserMenuItems onShowTx={() => showRecentTxModal()} />}
       </UserMenu>

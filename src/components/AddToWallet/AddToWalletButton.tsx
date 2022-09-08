@@ -11,6 +11,7 @@ import {
 } from '@pancakeswap/uikit'
 import { BAD_SRCS } from 'components/Logo/Logo'
 import { useAccount } from 'wagmi'
+import { canRegisterToken } from '../../utils/wallet'
 
 export enum AddToWalletTextOptions {
   NO_TEXT,
@@ -37,6 +38,15 @@ const Icons = {
   MetaMask: MetamaskIcon,
 }
 
+const getWalletText = (textOptions: AddToWalletTextOptions, tokenSymbol: string, t: any) => {
+  return (
+    textOptions !== AddToWalletTextOptions.NO_TEXT &&
+    (textOptions === AddToWalletTextOptions.TEXT
+      ? t('Add to Wallet')
+      : t('Add %asset% to Wallet', { asset: tokenSymbol }))
+  )
+}
+
 const getWalletIcon = (marginTextBetweenLogo: string, name?: string) => {
   const iconProps = {
     width: '16px',
@@ -46,8 +56,7 @@ const getWalletIcon = (marginTextBetweenLogo: string, name?: string) => {
     const Icon = Icons[name]
     return <Icon {...iconProps} />
   }
-  // @ts-ignore
-  if (window?.ethereum?.isTrust && !window?.ethereum?.isSafePal) {
+  if (window?.ethereum?.isTrust) {
     return <TrustWalletIcon {...iconProps} />
   }
   if (window?.ethereum?.isCoinbaseWallet) {
@@ -73,8 +82,12 @@ const AddToWalletButton: React.FC<AddToWalletButtonProps & ButtonProps> = ({
 }) => {
   const { t } = useTranslation()
   const { connector, isConnected } = useAccount()
+  const isCanRegisterToken = canRegisterToken()
 
+  if (connector && connector.name === 'Binance') return null
   if (!(connector && connector.watchAsset && isConnected)) return null
+  if (!isCanRegisterToken) return null
+
   return (
     <Button
       {...props}
@@ -89,10 +102,7 @@ const AddToWalletButton: React.FC<AddToWalletButtonProps & ButtonProps> = ({
         })
       }}
     >
-      {textOptions !== AddToWalletTextOptions.NO_TEXT &&
-        (textOptions === AddToWalletTextOptions.TEXT
-          ? t('Add to Wallet')
-          : t('Add %asset% to Wallet', { asset: tokenSymbol }))}
+      {getWalletText(textOptions, tokenSymbol, t)}
       {getWalletIcon(marginTextBetweenLogo, connector?.name)}
     </Button>
   )

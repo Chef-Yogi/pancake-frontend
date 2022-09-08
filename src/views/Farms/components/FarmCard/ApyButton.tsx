@@ -1,6 +1,6 @@
 import styled from 'styled-components'
 import BigNumber from 'bignumber.js'
-import { Flex, IconButton, useModal, CalculateIcon } from '@pancakeswap/uikit'
+import { Flex, IconButton, useModal, CalculateIcon, TooltipText, useTooltip, Text } from '@pancakeswap/uikit'
 import RoiCalculatorModal from 'components/RoiCalculatorModal'
 import { useTranslation } from '@pancakeswap/localization'
 import { useFarmUser, useLpTokenPrice } from 'state/farms/hooks'
@@ -22,8 +22,11 @@ export interface ApyButtonProps {
   cakePrice?: BigNumber
   apr?: number
   displayApr?: string
+  lpRewardsApr?: number
   addLiquidityUrl?: string
   strikethrough?: boolean
+  useTooltipText?: boolean
+  hideButton?: boolean
 }
 
 const ApyButton: React.FC<React.PropsWithChildren<ApyButtonProps>> = ({
@@ -35,8 +38,11 @@ const ApyButton: React.FC<React.PropsWithChildren<ApyButtonProps>> = ({
   apr,
   multiplier,
   displayApr,
+  lpRewardsApr,
   addLiquidityUrl,
   strikethrough,
+  useTooltipText,
+  hideButton,
 }) => {
   const { t } = useTranslation()
   const lpPrice = useLpTokenPrice(lpSymbol)
@@ -61,19 +67,60 @@ const ApyButton: React.FC<React.PropsWithChildren<ApyButtonProps>> = ({
     onPresentApyModal()
   }
 
+  const { targetRef, tooltip, tooltipVisible } = useTooltip(
+    <>
+      <Text>
+        {t('APR (incl. LP rewards)')}:{' '}
+        <Text style={{ display: 'inline-block' }} color={strikethrough && 'secondary'}>
+          {strikethrough ? `${(apr * 2 + lpRewardsApr).toFixed(2)}%` : `${displayApr}%`}
+        </Text>
+      </Text>
+      <Text ml="5px">
+        *{t('Base APR (CAKE yield only)')}:{' '}
+        {strikethrough ? (
+          <Text style={{ display: 'inline-block' }} color="secondary">{`${(apr * 2).toFixed(2)}%`}</Text>
+        ) : (
+          `${apr.toFixed(2)}%`
+        )}
+      </Text>
+      <Text ml="5px">
+        *{t('LP Rewards APR')}: {lpRewardsApr === 0 ? '-' : lpRewardsApr}%
+      </Text>
+      {strikethrough && <Text color="secondary">{t('Available Boosted: Up to 2x')}</Text>}
+      {strikethrough && <Text color="secondary">{t('Boost only applies to base APR (CAKE yield)')}</Text>}
+    </>,
+    {
+      placement: 'top',
+    },
+  )
+
   return (
-    <ApyLabelContainer
-      alignItems="center"
-      onClick={handleClickButton}
-      style={strikethrough && { textDecoration: 'line-through' }}
-    >
-      {displayApr}%
-      {variant === 'text-and-button' && (
-        <IconButton variant="text" scale="sm" ml="4px">
-          <CalculateIcon width="18px" />
-        </IconButton>
-      )}
-    </ApyLabelContainer>
+    <Flex flexDirection="column" alignItems="flex-start">
+      <ApyLabelContainer
+        alignItems="center"
+        onClick={(event) => {
+          if (hideButton) return
+          handleClickButton(event)
+        }}
+        style={strikethrough && { textDecoration: 'line-through' }}
+      >
+        {useTooltipText ? (
+          <>
+            <TooltipText ref={targetRef} decorationColor="secondary">
+              {displayApr}%
+            </TooltipText>
+            {tooltipVisible && tooltip}
+          </>
+        ) : (
+          <>{displayApr}%</>
+        )}
+        {variant === 'text-and-button' && (
+          <IconButton variant="text" scale="sm" ml="4px">
+            <CalculateIcon width="18px" />
+          </IconButton>
+        )}
+      </ApyLabelContainer>
+    </Flex>
   )
 }
 

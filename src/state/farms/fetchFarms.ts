@@ -1,10 +1,10 @@
-import { SerializedFarmConfig } from 'config/constants/types'
 import BigNumber from 'bignumber.js'
+import { SerializedFarmConfig } from 'config/constants/types'
 import { getFullDecimalMultiplier } from 'utils/getFullDecimalMultiplier'
-import { BIG_ZERO, BIG_TWO } from '../../utils/bigNumber'
-import { fetchPublicFarmsData } from './fetchPublicFarmData'
-import { fetchMasterChefData } from './fetchMasterChefData'
+import { BIG_TWO, BIG_ZERO } from '../../utils/bigNumber'
 import { SerializedFarm } from '../types'
+import { fetchMasterChefData } from './fetchMasterChefData'
+import { fetchPublicFarmsData } from './fetchPublicFarmData'
 
 function getLpInfo({
   tokenBalanceLP,
@@ -41,10 +41,10 @@ function getLpInfo({
 function farmLpTransformer(farmResult, masterChefResult) {
   return (farm, index) => {
     const [
-      tokenBalanceLP, // not good
-      quoteTokenBalanceLP, // not good
-      lpTokenBalanceMC, // Good
-      lpTotalSupply, // Good
+      tokenBalanceLP,
+      quoteTokenBalanceLP,
+      lpTokenBalanceMC,
+      lpTotalSupply,
       [tokenDecimals],
       [quoteTokenDecimals],
     ] = farmResult[index]
@@ -71,10 +71,10 @@ function farmLpTransformer(farmResult, masterChefResult) {
   }
 }
 
-const fetchFarms = async (farmsToFetch: SerializedFarmConfig[]): Promise<SerializedFarm[]> => {
+const fetchFarms = async (farmsToFetch: SerializedFarmConfig[], chainId: number): Promise<SerializedFarm[]> => {
   const [farmResult, masterChefResult] = await Promise.all([
-    fetchPublicFarmsData(farmsToFetch),
-    fetchMasterChefData(farmsToFetch),
+    fetchPublicFarmsData(farmsToFetch, chainId),
+    fetchMasterChefData(farmsToFetch, chainId),
   ])
 
   return farmsToFetch.map(farmLpTransformer(farmResult, masterChefResult))

@@ -12,7 +12,7 @@ import {
   ProfileAvatar,
   Skeleton,
   Heading,
-  useMatchBreakpointsContext,
+  useMatchBreakpoints,
 } from '@pancakeswap/uikit'
 import { useProfileForAddress } from 'state/profile/hooks'
 import useTheme from 'hooks/useTheme'
@@ -59,7 +59,7 @@ const WalletStatsModal: React.FC<React.PropsWithChildren<WalletStatsModalProps>>
   const { theme } = useTheme()
   const { profile } = useProfileForAddress(address)
   const isLoading = leaderboardLoadingState === FetchStatus.Fetching
-  const { isDesktop } = useMatchBreakpointsContext()
+  const { isDesktop } = useMatchBreakpoints()
 
   const handleDismiss = () => {
     if (onBeforeDismiss) {
@@ -71,7 +71,7 @@ const WalletStatsModal: React.FC<React.PropsWithChildren<WalletStatsModalProps>>
 
   return (
     <ModalContainer $minWidth="320px">
-      <ModalHeader background={theme.colors.gradients.bubblegum}>
+      <ModalHeader background={theme.colors.gradientBubblegum}>
         <Flex alignItems="center" style={{ flex: 1 }}>
           <Box width={['64px', null, null, null, null, null, '96px']} mr="16px">
             <ProfileAvatar src={profile?.nft?.image?.thumbnail} height={96} width={96} />

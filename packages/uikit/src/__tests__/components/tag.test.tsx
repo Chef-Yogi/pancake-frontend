@@ -1,9 +1,9 @@
 import React from "react";
-import { renderWithTheme } from "../../testHelpers";
+import { renderWithProvider } from "../../testHelpers";
 import Tag from "../../components/Tag/Tag";
 
 it("renders correctly", () => {
-  const { asFragment } = renderWithTheme(<Tag>Core</Tag>);
+  const { asFragment } = renderWithProvider(<Tag>Core</Tag>);
   expect(asFragment()).toMatchInlineSnapshot(`
     <DocumentFragment>
       .c0 {
@@ -22,7 +22,7 @@ it("renders correctly", () => {
       height: 28px;
       padding: 0 8px;
       font-size: 14px;
-      background-color: #1FC7D4;
+      background-color: var(--colors-primary);
     }
 
     .c0 > svg {

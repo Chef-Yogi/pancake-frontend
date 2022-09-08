@@ -1,13 +1,13 @@
 import React from "react";
-import { renderWithTheme } from "../../testHelpers";
+import { renderWithProvider } from "../../testHelpers";
 import { Link, LinkExternal } from "../../components/Link";
 
 it("renders link correctly", () => {
-  const { asFragment } = renderWithTheme(<Link href="https://pancakeswap.finance">Link</Link>);
+  const { asFragment } = renderWithProvider(<Link href="https://pancakeswap.finance">Link</Link>);
   expect(asFragment()).toMatchInlineSnapshot(`
     <DocumentFragment>
       .c0 {
-      color: #1FC7D4;
+      color: var(--colors-primary);
       font-weight: 600;
       line-height: 1.5;
       font-size: 16px;
@@ -45,11 +45,22 @@ it("renders link correctly", () => {
 });
 
 it("renders link external link correctly", () => {
-  const { asFragment } = renderWithTheme(<LinkExternal href="https://pancakeswap.finance">Link</LinkExternal>);
+  const { asFragment } = renderWithProvider(<LinkExternal href="https://pancakeswap.finance">Link</LinkExternal>);
   expect(asFragment()).toMatchInlineSnapshot(`
     <DocumentFragment>
-      .c0 {
-      color: #1FC7D4;
+      .c2 {
+      -webkit-align-self: center;
+      -ms-flex-item-align: center;
+      align-self: center;
+      fill: var(--colors-primary);
+      -webkit-flex-shrink: 0;
+      -ms-flex-negative: 0;
+      flex-shrink: 0;
+      margin-left: 4px;
+    }
+
+    .c0 {
+      color: var(--colors-primary);
       font-weight: 600;
       line-height: 1.5;
       font-size: 16px;
@@ -72,17 +83,6 @@ it("renders link external link correctly", () => {
     .c1:hover {
       -webkit-text-decoration: underline;
       text-decoration: underline;
-    }
-
-    .c2 {
-      -webkit-align-self: center;
-      -ms-flex-item-align: center;
-      align-self: center;
-      fill: #1FC7D4;
-      -webkit-flex-shrink: 0;
-      -ms-flex-negative: 0;
-      flex-shrink: 0;
-      margin-left: 4px;
     }
 
     @supports (-webkit-text-size-adjust:none) and (not (-ms-accelerator:true)) and (not (-moz-appearance:none)) {

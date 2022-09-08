@@ -20,6 +20,7 @@ import UnsupportedCurrencyFooter from 'components/UnsupportedCurrencyFooter'
 import { useZapContract } from 'hooks/useContract'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { getZapAddress } from 'utils/addressHelpers'
+import { CommitButton } from 'components/CommitButton'
 import { getLPSymbol } from 'utils/getLpSymbol'
 import useNativeCurrency from 'hooks/useNativeCurrency'
 import { useRouter } from 'next/router'
@@ -29,7 +30,7 @@ import { ContractMethodName } from 'utils/types'
 import { transactionErrorToUserReadableMessage } from 'utils/transactionErrorToUserReadableMessage'
 import { useLPApr } from 'state/swap/hooks'
 import { ROUTER_ADDRESS } from 'config/constants/exchange'
-import { CAKE, USDC } from 'config/constants/tokens'
+import { CAKE, USDC } from '@pancakeswap/tokens'
 import { LightCard } from '../../components/Card'
 import { AutoColumn, ColumnCenter } from '../../components/Layout/Column'
 import CurrencyInputPanel from '../../components/CurrencyInputPanel'
@@ -78,7 +79,7 @@ const zapAddress = getZapAddress()
 
 export default function AddLiquidity() {
   const router = useRouter()
-  const { account, chainId } = useActiveWeb3React()
+  const { account, chainId, isWrongNetwork } = useActiveWeb3React()
 
   const addPair = usePairAdder()
   const [zapMode] = useZapModeManager()
@@ -832,6 +833,8 @@ export default function AddLiquidity() {
                   </Button>
                 ) : !account ? (
                   <ConnectWalletButton />
+                ) : isWrongNetwork ? (
+                  <CommitButton />
                 ) : (
                   <AutoColumn gap="md">
                     {shouldShowApprovalGroup && (
@@ -864,7 +867,7 @@ export default function AddLiquidity() {
                         )}
                       </RowBetween>
                     )}
-                    <Button
+                    <CommitButton
                       isLoading={preferZapInstead && zapInEstimating}
                       variant={!isValid || zapIn.priceSeverity > 2 ? 'danger' : 'primary'}
                       onClick={() => {
@@ -891,7 +894,7 @@ export default function AddLiquidity() {
                       disabled={buttonDisabled}
                     >
                       {errorText || t('Supply')}
-                    </Button>
+                    </CommitButton>
                   </AutoColumn>
                 )}
               </AutoColumn>

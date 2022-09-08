@@ -13,7 +13,7 @@ import {
   BottomDrawer,
   ArrowUpDownIcon,
   Skeleton,
-  useMatchBreakpointsContext,
+  useMatchBreakpoints,
 } from '@pancakeswap/uikit'
 import { useIsTransactionUnsupported } from 'hooks/Trades'
 import UnsupportedCurrencyFooter from 'components/UnsupportedCurrencyFooter'
@@ -27,6 +27,10 @@ import { BIG_INT_ZERO } from 'config/constants/exchange'
 import { maxAmountSpend } from 'utils/maxAmountSpend'
 import shouldShowSwapWarning from 'utils/shouldShowSwapWarning'
 import { useSwapActionHandlers } from 'state/swap/useSwapActionHandlers'
+import SettingsModal, { withCustomOnDismiss } from 'components/Menu/GlobalSettings/SettingsModal'
+import { SettingsMode } from 'components/Menu/GlobalSettings/types'
+
+import AccessRisk from 'views/Swap/components/AccessRisk'
 import useRefreshBlockNumberID from './hooks/useRefreshBlockNumber'
 import AddressInputPanel from './components/AddressInputPanel'
 import { GreyCard } from '../../components/Card'
@@ -94,13 +98,16 @@ const SwitchIconButton = styled(IconButton)`
   }
 `
 
-const CHART_SUPPORT_CHAIN_IDS = [ChainId.BSC, ChainId.ETHEREUM]
+const CHART_SUPPORT_CHAIN_IDS = [ChainId.BSC]
+export const ACCESS_TOKEN_SUPPORT_CHAIN_IDS = [ChainId.BSC]
+
+const SettingsModalWithCustomDismiss = withCustomOnDismiss(SettingsModal)
 
 export default function Swap() {
   const router = useRouter()
   const loadedUrlParams = useDefaultsFromURLSearch()
   const { t } = useTranslation()
-  const { isMobile } = useMatchBreakpointsContext()
+  const { isMobile } = useMatchBreakpoints()
   const [isChartExpanded, setIsChartExpanded] = useState(false)
   const [userChartPreference, setUserChartPreference] = useExchangeChartManager(isMobile)
   const [isChartDisplayed, setIsChartDisplayed] = useState(userChartPreference)
@@ -351,6 +358,15 @@ export default function Swap() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [importTokensNotInDefault.length])
 
+  const [indirectlyOpenConfirmModalState, setIndirectlyOpenConfirmModalState] = useState(false)
+
+  const [onPresentSettingsModal] = useModal(
+    <SettingsModalWithCustomDismiss
+      customOnDismiss={() => setIndirectlyOpenConfirmModalState(true)}
+      mode={SettingsMode.SWAP_LIQUIDITY}
+    />,
+  )
+
   const [onPresentConfirmModal] = useModal(
     <ConfirmSwapModal
       trade={trade}
@@ -364,11 +380,23 @@ export default function Swap() {
       onConfirm={handleSwap}
       swapErrorMessage={swapErrorMessage}
       customOnDismiss={handleConfirmDismiss}
+      openSettingModal={onPresentSettingsModal}
     />,
     true,
     true,
     'confirmSwapModal',
   )
+
+  useEffect(() => {
+    if (indirectlyOpenConfirmModalState) {
+      setIndirectlyOpenConfirmModalState(false)
+      setSwapState((state) => ({
+        ...state,
+        swapErrorMessage: undefined,
+      }))
+      onPresentConfirmModal()
+    }
+  }, [indirectlyOpenConfirmModalState, onPresentConfirmModal])
 
   const hasAmount = Boolean(parsedAmount)
 
@@ -384,6 +412,11 @@ export default function Swap() {
       !chainId || CHART_SUPPORT_CHAIN_IDS.includes(chainId),
     [chainId],
   )
+
+  const isAccessTokenSupported = useMemo(() => ACCESS_TOKEN_SUPPORT_CHAIN_IDS.includes(chainId), [chainId])
+  const isShowAccessToken = useMemo(() => {
+    return isAccessTokenSupported && !currencies[Field.OUTPUT]?.isNative
+  }, [isAccessTokenSupported, currencies])
 
   return (
     <Page removePadding={isChartExpanded} hideFooterOnDesktop={isChartExpanded}>
@@ -457,6 +490,8 @@ export default function Swap() {
                           onClick={() => {
                             setApprovalSubmitted(false) // reset 2 step UI for approvals
                             onSwitchTokens()
+                            replaceBrowserHistory('inputCurrency', outputCurrencyId)
+                            replaceBrowserHistory('outputCurrency', inputCurrencyId)
                           }}
                         >
                           <ArrowDownIcon
@@ -487,6 +522,10 @@ export default function Swap() {
                       showCommonBases
                       commonBasesType={CommonBasesType.SWAP_LIMITORDER}
                     />
+
+                    <Box style={{ display: isShowAccessToken ? 'block' : 'none' }}>
+                      <AccessRisk currency={currencies[Field.OUTPUT]} />
+                    </Box>
 
                     {isExpertMode && recipient !== null && !showWrap ? (
                       <>

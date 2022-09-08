@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useWeb3React } from '@pancakeswap/wagmi'
 import { useProfile } from 'state/profile/hooks'
-import { Box, useMatchBreakpointsContext } from '@pancakeswap/uikit'
+import { Box, useMatchBreakpoints } from '@pancakeswap/uikit'
 import { useTradingCompetitionContractFanToken } from 'hooks/useContract'
 import useTheme from 'hooks/useTheme'
+import { API_PROFILE } from 'config/constants/endpoints'
 import { PageMeta } from 'components/Layout/Page'
 import {
   SmartContractPhases,
@@ -32,9 +33,8 @@ import TeamRanksSection from './components/TeamRanksSection'
 import PrizesInfoSection from './components/PrizesInfoSection'
 
 const FanTokenCompetition = () => {
-  const profileApiUrl = process.env.NEXT_PUBLIC_API_PROFILE
   const { account } = useWeb3React()
-  const { isMobile } = useMatchBreakpointsContext()
+  const { isMobile } = useMatchBreakpoints()
   const { profile, isLoading: isProfileLoading } = useProfile()
   const { isDark } = useTheme()
   const tradingCompetitionContract = useTradingCompetitionContractFanToken(false)
@@ -143,7 +143,7 @@ const FanTokenCompetition = () => {
 
   useEffect(() => {
     const fetchUserTradingStats = async () => {
-      const res = await fetch(`${profileApiUrl}/api/users/${account}`)
+      const res = await fetch(`${API_PROFILE}/api/users/${account}`)
       const data = await res.json()
       setUserLeaderboardInformation(data.leaderboard_fantoken)
     }
@@ -151,7 +151,7 @@ const FanTokenCompetition = () => {
     if (userTradingInformation.account && userTradingInformation.hasRegistered) {
       fetchUserTradingStats()
     }
-  }, [account, userTradingInformation, profileApiUrl])
+  }, [account, userTradingInformation])
 
   const isLoading = isProfileLoading || userTradingInformation.isLoading
 

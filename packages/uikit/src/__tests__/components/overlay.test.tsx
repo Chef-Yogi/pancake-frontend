@@ -1,9 +1,9 @@
 import React from "react";
-import { renderWithTheme } from "../../testHelpers";
+import { renderWithProvider } from "../../testHelpers";
 import { Overlay } from "../../components/Overlay";
 
 it("renders correctly", () => {
-  const { asFragment } = renderWithTheme(<Overlay />);
+  const { asFragment } = renderWithProvider(<Overlay />);
   expect(asFragment()).toMatchInlineSnapshot(`
     <DocumentFragment>
       .c0 {
@@ -12,7 +12,7 @@ it("renders correctly", () => {
       left: 0px;
       width: 100%;
       height: 100%;
-      background-color: #280D5F99;
+      background-color: var(--colors-text99);
       z-index: 20;
       will-change: opacity;
       -webkit-animation: dHqLl 350ms ease forwards;

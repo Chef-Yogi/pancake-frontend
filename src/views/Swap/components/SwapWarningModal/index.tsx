@@ -2,7 +2,7 @@ import styled from 'styled-components'
 import { ModalBody, ModalContainer, Message, ModalHeader, Box, Heading } from '@pancakeswap/uikit'
 import useTheme from 'hooks/useTheme'
 import { useTranslation } from '@pancakeswap/localization'
-import { WrappedTokenInfo } from 'state/types'
+import { WrappedTokenInfo } from '@pancakeswap/tokens'
 import SwapWarningTokensConfig from 'config/constants/swapWarningTokens'
 import SafemoonWarning from './SafemoonWarning'
 import ItamWarning from './ItamWarning'
@@ -66,7 +66,7 @@ const SwapWarningModal: React.FC<React.PropsWithChildren<SwapWarningModalProps>>
 
   return (
     <StyledModalContainer $minWidth="280px">
-      <ModalHeader background={theme.colors.gradients.cardHeader}>
+      <ModalHeader background={theme.colors.gradientCardHeader}>
         <Heading p="12px 24px">{t('Notice for trading %symbol%', { symbol: SWAP_WARNING.symbol })}</Heading>
       </ModalHeader>
       <ModalBody p="24px">

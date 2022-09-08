@@ -1,9 +1,9 @@
 import React from "react";
-import { renderWithTheme } from "../../testHelpers";
+import { renderWithProvider } from "../../testHelpers";
 import Breadcrumbs from "../../components/Breadcrumbs/Breadcrumbs";
 
 it("renders correctly", () => {
-  const { asFragment } = renderWithTheme(<Breadcrumbs>Link</Breadcrumbs>);
+  const { asFragment } = renderWithProvider(<Breadcrumbs>Link</Breadcrumbs>);
   expect(asFragment()).toMatchInlineSnapshot(`
     <DocumentFragment>
       .c0 {
@@ -22,11 +22,11 @@ it("renders correctly", () => {
     }
 
     .c0 a {
-      color: #1FC7D4;
+      color: var(--colors-primary);
     }
 
     .c0 a:hover {
-      color: #53DEE9;
+      color: var(--colors-primaryBright);
     }
 
     <ul

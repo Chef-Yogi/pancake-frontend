@@ -1,16 +1,16 @@
 import React from "react";
-import { renderWithTheme } from "../../testHelpers";
+import { renderWithProvider } from "../../testHelpers";
 import Skeleton from "../../components/Skeleton/Skeleton";
 
 it("renders correctly", () => {
-  const { asFragment } = renderWithTheme(<Skeleton />);
+  const { asFragment } = renderWithProvider(<Skeleton />);
   expect(asFragment()).toMatchInlineSnapshot(`
     <DocumentFragment>
       .c0 {
       min-height: 20px;
       display: block;
-      background-color: #E9EAEB;
-      border-radius: 4px;
+      background-color: var(--colors-backgroundDisabled);
+      border-radius: var(--radii-small);
     }
 
     .c1 {
@@ -29,14 +29,14 @@ it("renders correctly", () => {
 });
 
 it("renders correctly avatar", () => {
-  const { asFragment } = renderWithTheme(<Skeleton width={50} height={50} variant="circle" />);
+  const { asFragment } = renderWithProvider(<Skeleton width={50} height={50} variant="circle" />);
   expect(asFragment()).toMatchInlineSnapshot(`
     <DocumentFragment>
       .c0 {
       min-height: 20px;
       display: block;
-      background-color: #E9EAEB;
-      border-radius: 50%;
+      background-color: var(--colors-backgroundDisabled);
+      border-radius: var(--radii-circle);
       width: 50px;
       height: 50px;
     }
@@ -59,14 +59,14 @@ it("renders correctly avatar", () => {
 });
 
 it("renders correctly waves animation", () => {
-  const { asFragment } = renderWithTheme(<Skeleton width={50} height={50} animation="waves" />);
+  const { asFragment } = renderWithProvider(<Skeleton width={50} height={50} animation="waves" />);
   expect(asFragment()).toMatchInlineSnapshot(`
     <DocumentFragment>
       .c0 {
       min-height: 20px;
       display: block;
-      background-color: #E9EAEB;
-      border-radius: 4px;
+      background-color: var(--colors-backgroundDisabled);
+      border-radius: var(--radii-small);
       width: 50px;
       height: 50px;
     }
