@@ -121,6 +121,7 @@ export function useEstimatedAmount({ estimatedCurrency, stableSwapConfig, quotie
 export default function useStableTradeExactIn(
   currencyAmountIn?: CurrencyAmount<Currency>,
   currencyOut?: Currency,
+  isStableSwap?: boolean,
 ): StableTrade | null {
   const { stableSwapContract, stableSwapConfig } = useContext(StableConfigContext)
 

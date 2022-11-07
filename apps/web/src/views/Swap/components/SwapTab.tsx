@@ -33,7 +33,7 @@ export default function SwapTab({ children }) {
   const [swapTypeState, setSwapType] = useState(SwapType.SWAP)
   const { theme } = useTheme()
 
-  if (isStableSupported) {
+  if (isStableSupported && false) {
     return (
       <>
         <Wrapper>

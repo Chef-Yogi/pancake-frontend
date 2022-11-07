@@ -1,42 +1,63 @@
-import { useCallback, useEffect, useState, useMemo, useContext } from 'react'
-import { Currency, CurrencyAmount, Percent, NATIVE } from '@pancakeswap/sdk'
-import { Button, ArrowDownIcon, Box, Skeleton, Swap as SwapUI, Message, MessageText } from '@pancakeswap/uikit'
-import { useIsTransactionUnsupported } from 'hooks/Trades'
-import UnsupportedCurrencyFooter from 'components/UnsupportedCurrencyFooter'
-import useActiveWeb3React from 'hooks/useActiveWeb3React'
 import { useTranslation } from '@pancakeswap/localization'
-import { maxAmountSpend } from 'utils/maxAmountSpend'
+import { Currency, CurrencyAmount, NATIVE, Percent } from '@pancakeswap/sdk'
+import {
+  ArrowDownIcon,
+  Box,
+  Button,
+  Card,
+  CardBody,
+  Message,
+  MessageText,
+  ShareIcon,
+  Skeleton,
+  Swap as SwapUI,
+  Text,
+  Flex,
+} from '@pancakeswap/uikit'
+import { CurrencyLogo, DoubleCurrencyLogo } from 'components/Logo'
+import UnsupportedCurrencyFooter from 'components/UnsupportedCurrencyFooter'
+import { useIsTransactionUnsupported } from 'hooks/Trades'
+import useActiveWeb3React from 'hooks/useActiveWeb3React'
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { useSwapActionHandlers } from 'state/swap/useSwapActionHandlers'
+import { maxAmountSpend } from 'utils/maxAmountSpend'
 import AccessRisk from 'views/Swap/components/AccessRisk'
 
+import replaceBrowserHistory from '@pancakeswap/utils/replaceBrowserHistory'
 import CurrencyInputPanel from 'components/CurrencyInputPanel'
-import { CommonBasesType } from 'components/SearchModal/types'
-import { AutoRow } from 'components/Layout/Row'
 import { AutoColumn } from 'components/Layout/Column'
-
+import { AutoRow } from 'components/Layout/Row'
+import { CommonBasesType } from 'components/SearchModal/types'
 import { useCurrency } from 'hooks/Tokens'
 import { ApprovalState, useApproveCallbackFromTrade } from 'hooks/useApproveCallback'
 import useWrapCallback, { WrapType } from 'hooks/useWrapCallback'
-
-import { Field } from 'state/swap/actions'
-import { useDerivedSwapInfo, useSwapState } from 'state/swap/hooks'
-import { useExpertModeManager, useUserSlippageTolerance } from 'state/user/hooks'
-
-import replaceBrowserHistory from '@pancakeswap/utils/replaceBrowserHistory'
-import { currencyId } from 'utils/currencyId'
-
 import { useAtomValue } from 'jotai'
-import CurrencyInputHeader from './CurrencyInputHeader'
-import SwapCommitButton from './SwapCommitButton'
-import useWarningImport from '../hooks/useWarningImport'
+import { Field } from 'state/swap/actions'
+import { useDerivedSwapInfoWithStableSwap, useSwapState } from 'state/swap/hooks'
+import { useExpertModeManager, useUserSlippageTolerance } from 'state/user/hooks'
+import styled from 'styled-components'
+import { currencyId } from 'utils/currencyId'
+import { combinedTokenMapFromOfficialsUrlsAtom } from '../../../state/lists/hooks'
+import { isAddress } from '../../../utils'
 import useRefreshBlockNumberID from '../hooks/useRefreshBlockNumber'
+import useWarningImport from '../hooks/useWarningImport'
+import { useStableFarms } from '../StableSwap/hooks/useStableConfig'
+import { SwapFeaturesContext } from '../SwapFeaturesContext'
 import AddressInputPanel from './AddressInputPanel'
 import AdvancedSwapDetailsDropdown from './AdvancedSwapDetailsDropdown'
+import CurrencyInputHeader from './CurrencyInputHeader'
 import { ArrowWrapper, Wrapper } from './styleds'
-import { useStableFarms } from '../StableSwap/hooks/useStableConfig'
-import { isAddress } from '../../../utils'
-import { SwapFeaturesContext } from '../SwapFeaturesContext'
-import { combinedTokenMapFromOfficialsUrlsAtom } from '../../../state/lists/hooks'
+import SwapCommitButton from './SwapCommitButton'
+
+const RouterBox = styled(Flex)`
+  background-image: radial-gradient(${({ theme }) => theme.colors.textSubtle} 10%, transparent 10%);
+  background-size: 10% 100%;
+`
+const RouterPoolBox = styled(Box)`
+  padding: 3px;
+  border-radius: 20px;
+  background-color: ${({ theme }) => theme.colors.backgroundDisabled};
+`
 
 export default function SwapForm() {
   const { isAccessTokenSupported } = useContext(SwapFeaturesContext)
@@ -64,6 +85,7 @@ export default function SwapForm() {
   } = useSwapState()
   const inputCurrency = useCurrency(inputCurrencyId)
   const outputCurrency = useCurrency(outputCurrencyId)
+
   const hasStableSwapAlternative = useMemo(() => {
     return stableFarms.some((stableFarm) => {
       const checkSummedToken0 = isAddress(stableFarm?.token0.address)
@@ -88,7 +110,9 @@ export default function SwapForm() {
     currencyBalances,
     parsedAmount,
     inputError: swapInputError,
-  } = useDerivedSwapInfo(independentField, typedValue, inputCurrency, outputCurrency, recipient)
+  } = useDerivedSwapInfoWithStableSwap(independentField, typedValue, inputCurrency, outputCurrency, recipient)
+
+  // console.log({ v2Trade, currencyBalances, parsedAmount, swapInputError }, 'Trade')
 
   const {
     wrapType,
@@ -131,6 +155,14 @@ export default function SwapForm() {
       ? parsedAmounts[independentField]?.toExact() ?? ''
       : parsedAmounts[dependentField]?.toSignificant(6) ?? '',
   }
+
+  console.log(
+    parsedAmounts,
+    parsedAmounts[independentField]?.toExact(),
+    parsedAmounts[dependentField]?.toSignificant(6),
+    // 最終預測價格
+    'formattedAmounts???',
+  )
 
   // check whether the user has approved the router on the input token
   const [approval, approveCallback] = useApproveCallbackFromTrade(trade, allowedSlippage, chainId)
@@ -268,6 +300,29 @@ export default function SwapForm() {
             </Box>
           )}
 
+          <AutoColumn>
+            <Card>
+              <CardBody>
+                <Box mb="20px">
+                  <Text>
+                    Smart Router
+                    <ShareIcon ml="5px" style={{ top: 3, position: 'relative' }} width={15} />
+                  </Text>
+                </Box>
+                <RouterBox justifyContent="space-between">
+                  <CurrencyLogo currency={inputCurrency} />
+                  {v2Trade?.route &&
+                    v2Trade?.route.pairs.map((d) => (
+                      <RouterPoolBox key={`tradingPairIds${d.liquidityToken.address}`}>
+                        <DoubleCurrencyLogo currency0={d.token0} currency1={d.token1} />
+                      </RouterPoolBox>
+                    ))}
+                  <CurrencyLogo currency={outputCurrency} />
+                </RouterBox>
+              </CardBody>
+            </Card>
+          </AutoColumn>
+
           {isExpertMode && recipient !== null && !showWrap ? (
             <>
               <AutoRow justify="space-between" style={{ padding: '0 1rem' }}>
@@ -300,6 +355,7 @@ export default function SwapForm() {
             />
           )}
         </AutoColumn>
+
         {hasStableSwapAlternative && (
           <AutoColumn>
             <Message variant="warning" my="16px">

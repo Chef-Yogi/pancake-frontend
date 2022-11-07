@@ -14,6 +14,7 @@ import StableSwapFormContainer from './StableSwap'
 import { StyledInputCurrencyWrapper, StyledSwapContainer } from './styles'
 import SwapTab, { SwapType } from './components/SwapTab'
 import { SwapFeaturesContext } from './SwapFeaturesContext'
+import useStableConfig, { StableConfigContext, useStableFarms } from './StableSwap/hooks/useStableConfig'
 
 export default function Swap() {
   const { isMobile } = useMatchBreakpoints()
@@ -25,6 +26,7 @@ export default function Swap() {
     [Field.INPUT]: { currencyId: inputCurrencyId },
     [Field.OUTPUT]: { currencyId: outputCurrencyId },
   } = useSwapState()
+
   const inputCurrency = useCurrency(inputCurrencyId)
   const outputCurrency = useCurrency(outputCurrencyId)
 
@@ -34,6 +36,16 @@ export default function Swap() {
   }
 
   const singleTokenPrice = useSingleTokenSwapInfo(inputCurrencyId, inputCurrency, outputCurrencyId, outputCurrency)
+
+  // stableSwap initialize
+  const stableFarms = useStableFarms()
+  const stableTokenPair = stableFarms?.length ? stableFarms[0] : null
+  const { stableSwapConfig, ...stableConfig } = useStableConfig({
+    tokenA: stableTokenPair?.token0,
+    tokenB: stableTokenPair?.token1,
+  })
+
+  console.log(stableTokenPair, '?????')
 
   return (
     <Page removePadding={isChartExpanded} hideFooterOnDesktop={isChartExpanded}>
@@ -73,11 +85,19 @@ export default function Swap() {
           <StyledSwapContainer $isChartExpanded={isChartExpanded}>
             <StyledInputCurrencyWrapper mt={isChartExpanded ? '24px' : '0'}>
               <AppBody>
-                <SwapTab>
+                {stableTokenPair ? (
+                  <StableConfigContext.Provider value={{ stableSwapConfig, ...stableConfig }}>
+                    <SwapForm />
+                  </StableConfigContext.Provider>
+                ) : (
+                  <SwapForm />
+                )}
+
+                {/* <SwapTab>
                   {(swapTypeState) =>
                     swapTypeState === SwapType.STABLE_SWAP ? <StableSwapFormContainer /> : <SwapForm />
                   }
-                </SwapTab>
+                </SwapTab> */}
               </AppBody>
             </StyledInputCurrencyWrapper>
           </StyledSwapContainer>
