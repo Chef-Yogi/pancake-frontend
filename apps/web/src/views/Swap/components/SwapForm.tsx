@@ -12,9 +12,7 @@ import {
   Skeleton,
   Swap as SwapUI,
   Text,
-  Flex,
 } from '@pancakeswap/uikit'
-import { CurrencyLogo, DoubleCurrencyLogo } from 'components/Logo'
 import UnsupportedCurrencyFooter from 'components/UnsupportedCurrencyFooter'
 import { useIsTransactionUnsupported } from 'hooks/Trades'
 import useActiveWeb3React from 'hooks/useActiveWeb3React'
@@ -35,7 +33,6 @@ import { useAtomValue } from 'jotai'
 import { Field } from 'state/swap/actions'
 import { useDerivedSwapInfoWithStableSwap, useSwapState } from 'state/swap/hooks'
 import { useExpertModeManager, useUserSlippageTolerance } from 'state/user/hooks'
-import styled from 'styled-components'
 import { currencyId } from 'utils/currencyId'
 import { combinedTokenMapFromOfficialsUrlsAtom } from '../../../state/lists/hooks'
 import { isAddress } from '../../../utils'
@@ -46,18 +43,9 @@ import { SwapFeaturesContext } from '../SwapFeaturesContext'
 import AddressInputPanel from './AddressInputPanel'
 import AdvancedSwapDetailsDropdown from './AdvancedSwapDetailsDropdown'
 import CurrencyInputHeader from './CurrencyInputHeader'
+import { RouterViewer } from './RouterViewer'
 import { ArrowWrapper, Wrapper } from './styleds'
 import SwapCommitButton from './SwapCommitButton'
-
-const RouterBox = styled(Flex)`
-  background-image: radial-gradient(${({ theme }) => theme.colors.textSubtle} 10%, transparent 10%);
-  background-size: 10% 100%;
-`
-const RouterPoolBox = styled(Box)`
-  padding: 3px;
-  border-radius: 20px;
-  background-color: ${({ theme }) => theme.colors.backgroundDisabled};
-`
 
 export default function SwapForm() {
   const { isAccessTokenSupported } = useContext(SwapFeaturesContext)
@@ -308,16 +296,7 @@ export default function SwapForm() {
                     <ShareIcon ml="5px" style={{ top: 3, position: 'relative' }} width={15} />
                   </Text>
                 </Box>
-                <RouterBox justifyContent="space-between">
-                  <CurrencyLogo currency={inputCurrency} />
-                  {v2Trade?.route &&
-                    v2Trade?.route.pairs.map((d) => (
-                      <RouterPoolBox key={`tradingPairIds${d.liquidityToken.address}`}>
-                        <DoubleCurrencyLogo currency0={d.token0} currency1={d.token1} />
-                      </RouterPoolBox>
-                    ))}
-                  <CurrencyLogo currency={outputCurrency} />
-                </RouterBox>
+                <RouterViewer inputCurrency={inputCurrency} outputCurrency={outputCurrency} trade={v2Trade} />
               </CardBody>
             </Card>
           </AutoColumn>
