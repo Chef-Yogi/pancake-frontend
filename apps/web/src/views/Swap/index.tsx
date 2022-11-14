@@ -45,8 +45,6 @@ export default function Swap() {
     tokenB: stableTokenPair?.token1,
   })
 
-  console.log(stableTokenPair, '?????')
-
   return (
     <Page removePadding={isChartExpanded} hideFooterOnDesktop={isChartExpanded}>
       <Flex width={['328px', , '100%']} height="100%" justifyContent="center" position="relative">

@@ -1,24 +1,27 @@
-import { Currency, CurrencyAmount, Trade, TradeType, Token } from '@pancakeswap/sdk'
-import { DEFAULT_INPUT_CURRENCY, DEFAULT_OUTPUT_CURRENCY } from 'config/constants/exchange'
-import { ParsedUrlQuery } from 'querystring'
-import { useEffect, useMemo, useState } from 'react'
-import { multicallv2 } from 'utils/multicall'
-import { useAccount } from 'wagmi'
 import { useTranslation } from '@pancakeswap/localization'
+import { Currency, CurrencyAmount, Token, Trade, TradeType, Route, Pair } from '@pancakeswap/sdk'
+import { getBestTradeExactIn, getBestTradeExactOut } from '@pancakeswap/smart-router/evm'
 import { CAKE, USDC } from '@pancakeswap/tokens'
 import tryParseAmount from '@pancakeswap/utils/tryParseAmount'
 import { useWeb3React } from '@pancakeswap/wagmi'
 import IPancakePairABI from 'config/abi/IPancakePair.json'
+import { DEFAULT_INPUT_CURRENCY, DEFAULT_OUTPUT_CURRENCY } from 'config/constants/exchange'
 import { useTradeExactIn, useTradeExactOut } from 'hooks/Trades'
 import { useActiveChainId } from 'hooks/useActiveChainId'
 import useNativeCurrency from 'hooks/useNativeCurrency'
 import { useRouter } from 'next/router'
+import { ParsedUrlQuery } from 'querystring'
+import { useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import useSWR from 'swr'
 import { isAddress } from 'utils'
 import { computeSlippageAdjustedAmounts } from 'utils/exchange'
 import getLpAddress from 'utils/getLpAddress'
+import { multicallv2 } from 'utils/multicall'
+import { provider } from 'utils/wagmi'
 import { getTokenAddress } from 'views/Swap/components/Chart/utils'
 import { useStableFarms } from 'views/Swap/StableSwap/hooks/useStableConfig'
+import { useAccount } from 'wagmi'
 import { AppState, useAppDispatch } from '../index'
 import { useUserSlippageTolerance } from '../user/hooks'
 import { useCurrencyBalances } from '../wallet/hooks'
@@ -209,6 +212,7 @@ export function useDerivedSwapInfoWithStableSwap(
   const isMatchStableSwap = useMatchStableSwap(inputCurrency, outputCurrency)
   const { account } = useWeb3React()
   const { t } = useTranslation()
+  // const { chainId } = useActiveChainId()
 
   const to: string | null = (recipient === null ? account : isAddress(recipient) || null) ?? null
 
@@ -220,8 +224,49 @@ export function useDerivedSwapInfoWithStableSwap(
   const isExactIn: boolean = independentField === Field.INPUT
   const parsedAmount = tryParseAmount(typedValue, (isExactIn ? inputCurrency : outputCurrency) ?? undefined)
 
-  const bestTradeExactIn = useTradeExactIn(isExactIn ? parsedAmount : undefined, outputCurrency ?? undefined)
-  const bestTradeExactOut = useTradeExactOut(inputCurrency ?? undefined, !isExactIn ? parsedAmount : undefined)
+  const { data: bestTradeExactInData } = useSWR(
+    parsedAmount && `Swap${inputCurrency.symbol}to${outputCurrency.symbol}In${parsedAmount?.numerator.toString()}}`,
+    () => getBestTradeExactIn(isExactIn ? parsedAmount : undefined, outputCurrency ?? undefined, { provider }),
+    { refreshInterval: 5000 },
+  )
+  const { data: bestTradeExactOutData } = useSWR(
+    inputCurrency &&
+      parsedAmount &&
+      `Swap${inputCurrency.symbol}to${outputCurrency.symbol}Out${parsedAmount?.numerator.toString()}`,
+    () => getBestTradeExactOut(!isExactIn ? parsedAmount : undefined, inputCurrency ?? undefined, { provider }),
+    { refreshInterval: 5000 },
+  )
+
+  const exactInRoute = bestTradeExactInData
+    ? new Route(
+        bestTradeExactInData.route.pairs as Pair[], // if the path without stable swap it will work
+        bestTradeExactInData.route.input,
+        bestTradeExactInData.route.output,
+      )
+    : undefined
+
+  const exactOutRoute = bestTradeExactOutData
+    ? new Route(
+        bestTradeExactOutData.route.pairs as Pair[], // if the path without stable swap it will work
+        bestTradeExactOutData.route.input,
+        bestTradeExactOutData.route.output,
+      )
+    : undefined
+
+  const newbestTradeExactIn =
+    bestTradeExactInData && exactInRoute
+      ? new Trade(exactInRoute, bestTradeExactInData.inputAmount, TradeType.EXACT_INPUT)
+      : undefined
+
+  const newbestTradeExactOut = bestTradeExactOutData
+    ? new Trade(exactOutRoute, bestTradeExactOutData.outputAmount, TradeType.EXACT_OUTPUT)
+    : undefined
+
+  // console.log(newbestTradeExactIn, newbestTradeExactIn, 'new')
+
+  // const bestTradeExactIn = useTradeExactIn(isExactIn ? parsedAmount : undefined, outputCurrency ?? undefined)
+  // const bestTradeExactOut = useTradeExactOut(inputCurrency ?? undefined, !isExactIn ? parsedAmount : undefined)
+  console.log(newbestTradeExactIn, newbestTradeExactOut, 'newbestTradeExact')
 
   // const bestStableTradeExactIn = useStableTradeExactIn(
   //   isExactIn ? parsedAmount : undefined,
@@ -232,7 +277,7 @@ export function useDerivedSwapInfoWithStableSwap(
   //   !isExactIn ? parsedAmount : undefined,
   // )
 
-  const v2Trade = isExactIn ? bestTradeExactIn : bestTradeExactOut
+  const v2Trade = isExactIn ? newbestTradeExactIn : newbestTradeExactOut
 
   const currencyBalances = {
     [Field.INPUT]: relevantTokenBalances[0],
@@ -262,8 +307,8 @@ export function useDerivedSwapInfoWithStableSwap(
     inputError = inputError ?? t('Enter a recipient')
   } else if (
     BAD_RECIPIENT_ADDRESSES.indexOf(formattedTo) !== -1 ||
-    (bestTradeExactIn && involvesAddress(bestTradeExactIn, formattedTo)) ||
-    (bestTradeExactOut && involvesAddress(bestTradeExactOut, formattedTo))
+    (newbestTradeExactIn && involvesAddress(newbestTradeExactIn, formattedTo)) ||
+    (newbestTradeExactOut && involvesAddress(newbestTradeExactOut, formattedTo))
   ) {
     inputError = inputError ?? t('Invalid recipient')
   }

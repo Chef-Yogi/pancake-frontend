@@ -156,13 +156,12 @@ export default function SwapForm() {
       : parsedAmounts[dependentField]?.toSignificant(6) ?? '',
   }
 
-  console.log(
-    parsedAmounts,
-    parsedAmounts[independentField]?.toExact(),
-    parsedAmounts[dependentField]?.toSignificant(6),
-    // 最終預測價格
-    'formattedAmounts???',
-  )
+  // console.log(
+  //   parsedAmounts,
+  //   parsedAmounts[independentField]?.toExact(),
+  //   parsedAmounts[dependentField]?.toSignificant(6),
+  //   'formattedAmounts???',
+  // )
 
   // check whether the user has approved the router on the input token
   const [approval, approveCallback] = useApproveCallbackFromTrade(trade, allowedSlippage, chainId)
